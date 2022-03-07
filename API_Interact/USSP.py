@@ -19,13 +19,13 @@ class USSP():
         self.write_headers = None
         self.isa_ids = []
         self.sub_ids = []
-        print("USSP %s created", self.id)
+        print("USSP %s created", self.id + "\n")
 
     def authentify_read(self):
         """
         Get the token for reading API info.
         """
-        print("Authentifying USSP %s",  self.id)
+        print("Authentifying USSP" + self.id)
         params = (
             ('sub', self.id),
             ('intended_audience', 'localhost'),
@@ -42,9 +42,9 @@ class USSP():
                 'Authorization': 'Bearer %s' % self.read_token,
                 'Content-Type': 'application/json'
             }
-            print("USSP %s auth read with token %s", (self.id, self.read_token))
+            print("USSP " + self.id + " auth read with token " + self.read_token + "\n")
         else:
-            print("Error in auth read process %", response.text)
+            print("Error in auth read process " + response.text + "\n")
 
 
 
@@ -52,7 +52,7 @@ class USSP():
         """
         Get the token for writting to the API.
         """
-        print("Authentifying USSP %s", self.id)
+        print("Authentifying USSP" + self.id)
         params = (
             ('sub', self.id),
             ('intended_audience', 'localhost'),
@@ -69,14 +69,14 @@ class USSP():
                 'Authorization': 'Bearer %s' % self.write_token,
                 'Content-Type': 'application/json'
             }
-            print("USSP %s auth write with token %s", (self.id, self.write_token))
+            print("USSP " + self.id + " auth write with token " + self.write_token + "\n")
         else:
-            print("Error in auth write process %", response.text)
+            print("Error in auth write process " + response.text + "\n")
 
 
     def get_isa(self, _isa_id = None):
         """
-        Get the USSPs attempting to reach ISAs. 
+        Get ISA info. 
         """
         if _isa_id is None:
             isa_id = self.test_isa_id
@@ -86,9 +86,9 @@ class USSP():
         url = "http://localhost:8082/v1/dss/identification_service_areas/%s" % isa_id
         response = requests.get(url, headers=self.read_headers)
 
-        print("USSP %s attempting to get ISA %s", (self.id, isa_id))
+        print("USSP " + self.id + " attempting to get ISA " + isa_id + "\n")
         print(response.text)
-        #version = response.json()['service_area']['version']
+        return response.json()['service_area']
 
 
     def create_isa(self):
@@ -128,11 +128,11 @@ class USSP():
                 "flights_url": "https://example.com/isa"
             })
 
-        print("USSP %s attempting to create ISA %s", (self.id, self.test_isa_id))
+        print("USSP " + self.id + " attempting to create ISA " + self.test_isa_id)
         response = requests.put(url, headers=self.write_headers, data=payload)
-        print(response.text)
+        print(response.text + "\n")
 
-        flights_url = response.json()['service_area']['flights_url']
+        #flights_url = response.json()['service_area']['flights_url']
         isa_id = response.json()['service_area']['id']
 
         return isa_id
@@ -164,7 +164,26 @@ class USSP():
                 }
             })
 
-        print("USSP %s attempting to subscribe with sub_id %s", (self.id, sub_id))
-        response = requests.request('PUT', "http://localhost:8082/v1/dss/subscriptions/%s" % sub_id, headers=self.read_headers, data=payload)
+        print("USSP " + self.id + " attempting to subscribe with sub_id " + str(sub_id) + "\n")
+        response = requests.request('PUT', "http://localhost:8082/v1/dss/subscriptions/" + str(sub_id), headers=self.read_headers, data=payload)
 
-        print(response.text)
+        print(response.text + "\n")
+
+    def delete_isa(self, isa_id, isa_version):
+        """
+        Delete an ISA owned by this USSP corresponding to 'isa_id'.
+        """
+        url = "http://localhost:8082/v1/dss/identification_service_areas/" + isa_id + "/" + isa_version
+        print("USSP " + self.id + " attempting to delete ISA" + isa_id + "\n")
+        response = requests.delete(url, headers=self.write_headers)
+        print(response.text + "\n")
+
+    
+    def delete_subscription(self, sub_id, sub_version):
+        """
+        Delete all subscriptions of this USSP to any ISA.
+        """
+        url = "http://localhost:8082/v1/dss/subscriptions/" + sub_id + "/" + sub_version
+        print("USSP " + self.id + " attempting to delete subscription with sub_id " + self.sub_ids[0] + "\n")
+        response = requests.delete(url, headers=self.write_headers)
+        print(response.text + "\n")

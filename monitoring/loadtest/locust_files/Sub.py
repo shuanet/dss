@@ -1,21 +1,28 @@
 #!env/bin/python3
-import client
+
 import datetime
 import random
 import threading
 import time
 import typing
 import uuid
+import client
 from monitoring.monitorlib import rid
 from monitoring.prober.rid import common
 from locust import task, between
 
 
 class Sub(client.USS):
+    """
+    Class Subscription definition.
+    """
     wait_time = between(0.01, 1)
     lock = threading.Lock()
 
     def gen_vertices(self):
+        """
+        Generate 4 vertices randomly.
+        """
         base_lng = random.randint(0, 180)
         base_lat = random.randint(-90, 90)
         return [
@@ -39,6 +46,9 @@ class Sub(client.USS):
 
     @task(100)
     def create_sub(self):
+        """
+        Create a subscription. Timestamps, ID, vertices, atitude range. Add it to sub_dict.
+        """
         time_start = datetime.datetime.utcnow()
         time_end = time_start + datetime.timedelta(minutes=60)
         sub_uuid = str(uuid.uuid4())
@@ -67,6 +77,9 @@ class Sub(client.USS):
 
     @task(20)
     def get_sub(self):
+        """
+        Get a subscription info randomly from sub_dict.
+        """
         target_sub = random.choice(list(self.sub_dict.keys())) if self.sub_dict else None
         if not target_sub:
             print("Nothing to pick from sub_dict for GET")
@@ -75,6 +88,9 @@ class Sub(client.USS):
 
     @task(50)
     def update_sub(self):
+        """
+        Update subscription info with ID and Version.
+        """
         target_sub, target_version = self.checkout_sub()
         if not target_sub:
             print("Nothing to pick from sub_dict for UPDATE")
@@ -106,6 +122,9 @@ class Sub(client.USS):
 
     @task(5)
     def delete_sub(self):
+        """
+        Delete a subscription with ID and Version.
+        """
         target_sub, target_version = self.checkout_sub()
         if not target_sub:
             print("Nothing to pick from sub_dict for DELETE")
@@ -113,6 +132,9 @@ class Sub(client.USS):
         self.client.delete("/subscriptions/{}/{}".format(target_sub, target_version))
 
     def checkout_sub(self):
+        """
+        Check a subscription with ID ans Version randomly.
+        """
         self.lock.acquire()
         target_sub = random.choice(list(self.sub_dict.keys())) if self.sub_dict else None
         target_version = self.sub_dict.pop(target_sub, None)
@@ -120,7 +142,9 @@ class Sub(client.USS):
         return target_sub, target_version
 
     def on_start(self):
-        # Insert atleast 1 Sub for update to not fail
+        """
+        Insert atleast 1 Sub for update to not fail.
+        """
         self.create_sub()
 
     def on_stop(self):

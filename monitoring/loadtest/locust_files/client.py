@@ -3,13 +3,19 @@
 import os
 import time
 import typing
-from locust import User 
+from locust import User
 from monitoring.monitorlib import auth, infrastructure, rid
 
 class DSSClient(infrastructure.DSSTestSession):
+    """
+    Client class for interacting with the API.
+    """
     _locust_environment = None
 
     def request(self, method: str, url: str, **kwargs):
+        """
+        Generate a request. Method, the url.
+        """
         if (method == "PUT" and len(url.split("/")) > 3) or method == "PATCH":
             real_method = "UPDATE"
         else:
@@ -39,6 +45,9 @@ class DSSClient(infrastructure.DSSTestSession):
         return result
 
     def log_exception(self, real_method: str, name: str, start_time: float, e: Exception):
+        """
+        Exception?
+        """
         total_time = int((time.time() - start_time) * 1000)
         self._locust_environment.events.request_failure.fire(
             request_type=real_method,
@@ -49,6 +58,9 @@ class DSSClient(infrastructure.DSSTestSession):
         )
 
 class USS(User):
+    """
+    Class User for a USSP with the ISA and Sub dictionaries.
+    """
     # Suggested by Locust 1.2.2 API Docs https://docs.locust.io/en/stable/api.html#locust.User.abstract
     abstract = True
     isa_dict: typing.Dict[str, str] = {}

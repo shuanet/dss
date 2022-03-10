@@ -3,7 +3,9 @@
 
 
 class ISA():
-
+	"""
+	Deine an ISA's attributes.
+	"""
 	def __init__(self, _name, _id, _geometry, _time_start, _time_end):
 
 		self.name = _name

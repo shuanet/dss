@@ -1,22 +1,23 @@
 #!/usr/bin/python3
 
-import requests
 import json
 import os
 import uuid
 import threading
 import time
 
+from datetime import datetime, timedelta
 from isa import ISA
 from subscription import Subscription
 
-from datetime import datetime, timedelta
-
 from flask import Flask
+import requests
+
 
 class USSP():
-
-
+    """
+    USSP actions with API
+    """
     def __init__(self, _id, _port):
         self.id = _id
         self.read_token = None
@@ -52,7 +53,9 @@ class USSP():
 
 
     def authentify_read(self):
-
+        """
+        Get the token for reading requests.
+        """
         params = (
             ('sub', self.id),
             ('intended_audience', 'localhost'),
@@ -76,7 +79,9 @@ class USSP():
 
 
     def authentify_write(self):
-
+        """
+        Get the token for writing requests.
+        """
         params = (
             ('sub', self.id),
             ('intended_audience', 'localhost'),
@@ -100,7 +105,9 @@ class USSP():
 
 
     def get_isa(self, _isa_id):
-
+        """
+        Get ISA details by its ID.
+        """
         url = "http://localhost:8082/v1/dss/identification_service_areas/%s" % _isa_id
         response = requests.get(url, headers=self.read_headers)
         print(response.json())
@@ -113,7 +120,9 @@ class USSP():
 
 
     def create_isa(self, _name, _geometry, _time_start, _time_end):
-
+        """
+        Create an ISA.
+        """
         new_isa_id = uuid.uuid1()
 
         isa = ISA(new_isa_id, _geometry, _time_start, _time_end, self.port)
@@ -125,7 +134,9 @@ class USSP():
 
 
     def create_isa_test(self):
-
+        """
+        Create a predetermined ISA "toulouse" for testing.
+        """
         new_isa_id = uuid.uuid1()
         now = datetime.now()
         time_start = now.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -165,7 +176,9 @@ class USSP():
 
 
     def submit_isa(self, _isa_id = None, _isa_name = None):
-
+        """
+        Sybmit ISA to API by its ID or Name.
+        """
         isa_id = ''
         submitted = False
         try:
@@ -204,7 +217,9 @@ class USSP():
 
 
     def delete_isa(self, _isa_id = None, _isa_name = None):
-
+        """
+        Deleting an ISA by its ID or its Name.
+        """
         isa_id = ''
         submitted = True
         try:
@@ -245,7 +260,9 @@ class USSP():
 
 
     def get_subscription(self, _sub_id):
-
+        """
+        Get a Sub by its ID.
+        """
         print("sub_id : ", _sub_id)
         url = "http://localhost:8082/v1/dss/subscriptions/%s" % _sub_id
         response = requests.get(url, headers=self.read_headers)
@@ -262,7 +279,9 @@ class USSP():
 
 
     def create_subscription_test(self):
-
+        """
+        Create a predetermined Sub with Name 'toulouse' for testing.
+        """
         new_sub_id = uuid.uuid1()
         now = datetime.now()
         time_start = now.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -301,7 +320,9 @@ class USSP():
 
 
     def create_subscription(self, _name, _geometry, _time_start, _time_end):
-
+        """
+        Create a Sub.
+        """
         new_sub_id = uuid.uuid1()
 
         subscription = Subscription(_name, new_sub_id, _geometry, _time_start, _time_end)
@@ -313,7 +334,9 @@ class USSP():
 
 
     def submit_subscription(self, _sub_id = None, _sub_name = None):
-
+        """
+        Submit a Sub to API by its ID or Name.
+        """
         sub_id = ''
         submitted = False
         try:
@@ -354,7 +377,9 @@ class USSP():
 
 
     def delete_subscription(self, _sub_id = None, _sub_name = None):
-
+        """
+        Delete a Sub by its ID or Name.
+        """
         sub_id = ''
         submitted = True
         try:

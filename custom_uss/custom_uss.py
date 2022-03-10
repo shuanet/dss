@@ -7,12 +7,13 @@ import uuid
 import threading
 import time
 
+from datetime import datetime, timedelta
+from flask import Flask, request
+
 from isa import ISA
 from subscription import Subscription
+from flight import Flight
 
-from datetime import datetime, timedelta
-
-from flask import Flask
 
 class USSP():
 
@@ -25,18 +26,32 @@ class USSP():
         self.write_headers = None
         self.isas = []
         self.subscriptions = []
+        self.flights = []
         print("USSP %s created" % self.id)
 
         self.port = _port
         self.app = Flask(__name__)
 
-        @self.app.route("/%s" % self.id , methods=['GET'])
+        @self.app.route("/%s" % self.id , methods=["GET"])
         def home_page():
             return ("HOMEPAGE")
 
-        @self.app.route("/%s/flights" % self.id, methods=["GET"])
-        def get_all_flights():
-            return ("all flights")
+        @self.app.route("/%s/flights" % self.id, methods=["GET", "POST"])
+        def flights():
+            if request.method == 'POST':
+                #print(request.data)
+                # check flight creation request completion
+                # accept or refuse flight
+                flight = self.create_flight(request.data)
+                # one day automatically assign flight to ISA ?
+                #isa_for_flight = input("Input ISA for flight %s : " % flight.id)
+                #self.assign_isa_to_flight(flight, isa_for_flight)
+                flight.status = "ACCEPTED"
+                return flight.get_json()
+            elif request.method == 'GET':
+                return ("all flights")
+
+        @self.app.route("/%s/flights/<string:flight_id>" % self.id, methods=['GET', 'POST'])
 
         @self.app.route("/%s/flights/<string:flight_id>/details" % self.id, methods=["GET"])
         def get_flight_details(flight_id, methods=["GET"]):
@@ -391,3 +406,34 @@ class USSP():
             print(response.text)
         else:
             print("The subscription was not submitted to DSS, cant delete from DSS")
+
+
+
+    def create_flight(self, _data):
+
+        #data = json.dumps(_data.decode('utf8').replace("'", '"'))
+        data = json.loads(_data.decode('utf8'))
+        print(data)
+
+        id = uuid.uuid1()
+        buffer = data["buffer"]
+        max_alt = data["max_alt"]
+        min_alt = data["min_alt"]
+        time_start = data["time_start"]
+        time_end = ["time_end"]
+
+        flight = Flight(id, buffer, max_alt, min_alt, time_start, time_end)
+
+        self.flights.append(flight)
+
+        return flight
+
+
+
+    def assign_isa_to_flight(self, flight, isa):
+
+        # one day check if whole flight is in isa
+
+        # get isa from self.isas and set flight.assigned_isa to isa.id
+
+        flight.assigned_isa = isa

@@ -21,6 +21,7 @@ create_sub name geometry time_start time_end
 submit_sub sub_id/sub_name 
 delete_sub sub_id/sub_name
 
+assign_flight flight_id isa_id/isa_name
 """
 
 def is_uuid(uuid):

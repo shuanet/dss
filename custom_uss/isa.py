@@ -18,7 +18,3 @@ class ISA():
 		return "ISA: %s \n ID:%s \n GEOMETRY:%s \n TIME_START:%s \n TIME_END:%s " \
 		% (self.name, self.id, self.geometry, self.time_start, self.time_end)
 
-
-
-
-

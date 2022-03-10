@@ -1,4 +1,4 @@
 #!/bin/sh
 
 
-./main.py
+./custom_uss/main.py

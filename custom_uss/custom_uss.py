@@ -71,7 +71,7 @@ class USSP():
             }
             print("USSP %s auth read with token %s" % (self.id, self.read_token))
         else:
-            print("Error in auth read process %" % response.text)
+            print("Error in auth read process %ss" % response.text)
 
 
 
@@ -95,7 +95,7 @@ class USSP():
             }
             print("USSP %s auth write with token %s" % (self.id, self.write_token))
         else:
-            print("Error in auth write process %" % response.text)
+            print("Error in auth write process %s" % response.text)
 
 
 
@@ -116,7 +116,7 @@ class USSP():
 
         new_isa_id = uuid.uuid1()
 
-        isa = ISA(new_isa_id, geometry, time_start, time_end, self.port)
+        isa = ISA(new_isa_id, _geometry, _time_start, _time_end, self.port)
         self.isas.append(isa)
 
         print("ISA created with id %s" % new_isa_id)

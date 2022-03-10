@@ -17,7 +17,7 @@ delete_isa isa_id
 create_sub toulouse
 create_sub name geometry time_start time_end
 submit_sub sub_id
-delete_isa isa_id
+delete_sub isa_id
 
 """
 

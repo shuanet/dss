@@ -50,6 +50,7 @@ class USSP():
         time.sleep(1) # give time for server to start
 
 
+
     def authentify_read(self):
 
         params = (
@@ -102,6 +103,7 @@ class USSP():
 
         url = "http://localhost:8082/v1/dss/identification_service_areas/%s" % _isa_id
         response = requests.get(url, headers=self.read_headers)
+        print(response.json())
 
         print("USSP %s attempting to get ISA %s" % (self.id, _isa_id))
         print(response.text)
@@ -129,7 +131,7 @@ class USSP():
         time_start = now.strftime("%Y-%m-%dT%H:%M:%SZ")
         tomorrow = datetime.now() + timedelta(days=1)
         time_end = tomorrow.strftime("%Y-%m-%dT%H:%M:%SZ")
-        name = "TOULOUSE"
+        name = "toulouse"
 
         geometry = {"footprint": {
                 "vertices": [{
@@ -161,81 +163,101 @@ class USSP():
         print(isa)
 
 
-    def submit_isa(self, _isa_id):
 
-        isa = next(isa for isa in self.isas if str(isa.id) == str(_isa_id))
+    def submit_isa(self, _isa_id = None, _isa_name = None):
 
-        payload = json.dumps({
-              "extents": {
-                "spatial_volume": isa.geometry,
-                "time_start": isa.time_start,
-                "time_end": isa.time_end
-              },
-              "flights_url": "http://localhost:%s/%s/%s" % (self.port, self.id, isa.id)
-            })
-
-        print(payload)
-
-        url = "http://localhost:8082/v1/dss/identification_service_areas/%s" % isa.id
-
-        print("USSP %s attempting to submit ISA %s" % (self.id, isa.id))
-        response = requests.put(url, headers=self.write_headers, data=payload)
-        print(response.text)
-
-
-
-    def delete_isa(self, _isa_id):
-
+        isa_id = ''
+        submitted = False
         try:
-            isa = next(isa for isa in self.isas if str(isa.id) == str(_isa_id))
+            if _isa_id is not None:
+                isa = next(isa for isa in self.isas if str(isa.id) == str(_isa_id))
+                isa_id = _isa_id
+            elif _isa_name is not None:
+                isa = next(isa for isa in self.isas if str(isa.name) == str(_isa_name))
+                isa_id = isa.id
+            submitted = isa.submitted
         except StopIteration:
             print("ISA not existing in USSP database")
-            print("Attempting to delete ISA from DSS database")
+            print("Use create_isa before submiting")
 
-        dss_isa = self.get_isa(_isa_id)
-        dss_isa_version = dss_isa.json()['service_area']['version']
+        if not submitted:
+            payload = json.dumps({
+                    "extents": {
+                        "spatial_volume": isa.geometry,
+                        "time_start": isa.time_start,
+                        "time_end": isa.time_end
+                    },
+                    "flights_url": "http://localhost:%s/%s/%s" % (self.port, self.id, isa.id)
+                })
 
-        url = "http://localhost:8082/v1/dss/identification_service_areas/%s/%s" % (_isa_id, dss_isa_version)
+            print("USSP %s attempting to submit ISA %s" % (self.id, isa_id))
+            response = requests.request('PUT', "http://localhost:8082/v1/dss/identification_service_areas/%s" % isa_id, headers=self.write_headers, data=payload)
+            #print(response.json())
 
-        response = requests.delete(url, headers=self.write_headers)
+            if response.status_code == 200:
+                print("ISA successfully submitted")
+                isa.submitted = True
+            else:
+                print("ISA already submitted")
+            print(response.text)
 
-        if response.status_code == 200:
+
+
+    def delete_isa(self, _isa_id = None, _isa_name = None):
+
+        isa_id = ''
+        submitted = True
+        try:
+            print("Attempting to delete ISA from USSP database")
+            if _isa_id is not None:
+                isa = next(isa for isa in self.isas if str(isa.id) == str(_isa_id))
+                isa_id = _isa_id
+            elif _isa_name is not None:
+                isa = next(isa for isa in self.isas if str(isa.name) == str(_isa_name))
+                isa_id = isa.id
+            submitted = isa.submitted
             del isa
+            print("ISA %s deleted from local USSP database" % isa_id)
+        except StopIteration:
+            print("ISA not existing in USSP database")
+            isa_id = _isa_id
+
+        if submitted:
+            print("Attempting to delete ISA %s from DSS database" % isa_id)
+            dss_isa = self.get_isa(isa_id)
+
+            dss_isa_version = dss_isa.json()['service_area']['version']
+
+            url = "http://localhost:8082/v1/dss/identification_service_areas/%s/%s" % (isa_id, dss_isa_version)
+
+            response = requests.delete(url, headers=self.write_headers)
+            #print(response.json())
+
+            if response.status_code == 200:
+                print("ISA successfully deleted from DSS database")
+            else:
+                print("Error when attempting to delete ISA from DSS")
+
+            print(response.text)
         else:
-            print("Error when attempting to delete ISA")
-            print("Maybe ISA was not submited to DSS")
-
-        print(response.text)
-
-
-    # intended to delete remaining ISAs in the DSS not deleted because of an error in the code 
-    def delete_dss_isa(self, _isa_id):
-
-        dss_isa = self.get_isa(_isa_id)
-        dss_isa_version = dss_isa.json()['service_area']['version']
-
-        url = "http://localhost:8082/v1/dss/identification_service_areas/%s/%s" % (_isa_id, dss_isa_version)
-
-        response = requests.delete(url, headers=self.write_headers)
-
-        if response.status_code == 200:
-            print("ISA deleted")
-        else:
-            print("Error when attempting to delete ISA")
-
-        print(response.text)
+            print("The ISA was not submitted to DSS, cant delete from DSS")
 
 
 
     def get_subscription(self, _sub_id):
 
+        print("sub_id : ", _sub_id)
         url = "http://localhost:8082/v1/dss/subscriptions/%s" % _sub_id
         response = requests.get(url, headers=self.read_headers)
+        print(response.json())
 
         print("USSP %s attempting to get subscription %s" % (self.id, _sub_id))
         print(response.text)
         
-        return response
+        if response.status_code == 200:
+            return response
+        else:
+            return  None
 
 
 
@@ -246,7 +268,7 @@ class USSP():
         time_start = now.strftime("%Y-%m-%dT%H:%M:%SZ")
         tomorrow = datetime.now() + timedelta(days=1)
         time_end = tomorrow.strftime("%Y-%m-%dT%H:%M:%SZ")
-        name = "TOULOUSE"
+        name = "toulouse"
 
         geometry = {"footprint": {
                 "vertices": [{
@@ -290,67 +312,82 @@ class USSP():
 
 
 
-    def submit_subscription(self, _sub_id):
+    def submit_subscription(self, _sub_id = None, _sub_name = None):
 
-        subscription = next(sub for sub in self.subscriptions if str(sub.id) == str(_sub_id))
-
-        payload = json.dumps({
-                "extents": {
-                    "spatial_volume": subscription.geometry,
-                    "time_start": subscription.time_start,
-                    "time_end": subscription.time_end
-                },
-                "callbacks": {
-                    "identification_service_area_url": "http://localhost:%s/%s/%s" % (self.port, self.id, subscription.id)
-                }
-            })
-
-
-        print("USSP %s attempting to subscribe with sub_id %s" % (self.id, _sub_id))
-        response = requests.request('PUT', "http://localhost:8082/v1/dss/subscriptions/%s" % _sub_id, headers=self.read_headers, data=payload)
-
-        print(response.text)
-
-
-
-    def delete_subscription(self, _sub_id):
-
+        sub_id = ''
+        submitted = False
         try:
-            subscription = next(sub for sub in self.subscriptions if str(sub.id) == str(_sub_id))
+            if _sub_id is not None:
+                subscription = next(sub for sub in self.subscriptions if str(sub.id) == str(_sub_id))
+                sub_id = _sub_id
+            elif _sub_name is not None:
+                subscription = next(sub for sub in self.subscriptions if str(sub.name) == str(_sub_name))
+                sub_id = subscription.id
+            submitted = subscription.submitted
         except StopIteration:
             print("Subscription not existing in USSP database")
-            print("Attempting to delete subscription from DSS database")
+            print("Use create_sub before submiting")
 
-        dss_sub = self.get_subscription(_sub_id)
-        dss_sub_version = dss_sub.json()['subscription']['version']
+        if not submitted:
+            payload = json.dumps({
+                    "extents": {
+                        "spatial_volume": subscription.geometry,
+                        "time_start": subscription.time_start,
+                        "time_end": subscription.time_end
+                    },
+                    "callbacks": {
+                        "identification_service_area_url": "http://localhost:%s/%s/%s" % (self.port, self.id, subscription.id)
+                    }
+                })
 
-        url = "http://localhost:8082/v1/dss/subscriptions/%s/%s" % (_sub_id, dss_sub_version)
+            print("USSP %s attempting to subscribe with sub_id %s" % (self.id, sub_id))
+            response = requests.request('PUT', "http://localhost:8082/v1/dss/subscriptions/%s" % sub_id, headers=self.read_headers, data=payload)
+            #print(response.json())
 
-        response = requests.delete(url, headers=self.read_headers)
+            if response.status_code == 200:
+                print("Subscription successfully submitted")
+                subscription.submitted = True
+            else:
+                print("Subscription not submitted")
+            print(response.text)
 
-        if response.status_code == 200:
+
+
+    def delete_subscription(self, _sub_id = None, _sub_name = None):
+
+        sub_id = ''
+        submitted = True
+        try:
+            print("Attempting to delete subscription from USSP database")
+            if _sub_id is not None:
+                subscription = next(sub for sub in self.subscriptions if str(sub.id) == str(_sub_id))
+                sub_id = _sub_id
+            elif _sub_name is not None:
+                subscription = next(sub for sub in self.subscriptions if str(sub.name) == str(_sub_name))
+                sub_id = subscription.id
+            submitted = subscription.submitted
             del subscription
-            print("Subscription successfully deleted")
+            print("Subscription deleted from local USSP database")
+        except StopIteration:
+            print("Subscription not existing in USSP database")
+            sub_id = _sub_id
+
+        if submitted:
+            print("Attempting to delete subscription from DSS database")
+            dss_sub = self.get_subscription(sub_id)
+
+            dss_sub_version = dss_sub.json()['subscription']['version']
+
+            url = "http://localhost:8082/v1/dss/subscriptions/%s/%s" % (sub_id, dss_sub_version)
+
+            response = requests.delete(url, headers=self.read_headers)
+            #print(response.json())
+
+            if response.status_code == 200:
+                print("Subscription successfully deleted from DSS database")
+            else:
+                print("Error when attempting to delete sub from DSS")
+
+            print(response.text)
         else:
-            print("Error when attempting to delete sub")
-
-        print(response.text)
-
-
-
-    # intended to delete remaining subscriptions in the DSS not deleted because of an error in the code 
-    def delete_dss_subscription(self, _sub_id):
-
-        dss_sub = self.get_subscription(_sub_id)
-        dss_sub_version = dss_sub.json()['subscription']['version']
-
-        url = "http://localhost:8082/v1/dss/subscriptions/%s/%s" % (_sub_id, dss_sub_version)
-
-        response = requests.delete(url, headers=self.read_headers)
-
-        if response.status_code == 200:
-            print("Subscription successfully deleted")
-        else:
-            print("Error when attempting to delete sub")
-
-        print(response.text)
+            print("The subscription was not submitted to DSS, cant delete from DSS")

@@ -31,10 +31,10 @@ Isa management:
 `create_isa name geometry time_start time_end` 
 * For testing purposes, you can create a predefined ISA, encompassing Toulouse and its surroundings, named TOULOUSE, starting now and lasting for a day: 
 `create_isa toulouse`
-* Once the ISA is created, it is only known by the USSP that created it. Once you are happy with the ISA, you can submit it to the DSS:
-`submit_isa isa_id`
-* You can also delete the ISA both from the USSP memory and the DSS:
-`delete_isa isa_id`
+* Once the ISA is created, it is only known by the USSP that created it. Once you are happy with the ISA, you can submit it to the DSS, passing either an ID or name as argument:
+`submit_isa isa_id/isa_name`
+* You can also delete the ISA both from the USSP memory and the DSS, passing either an ID or name as argument:
+`delete_isa isa_id/isa_name`
 
 Subscription management (same as for the ISAs):
 * Create subscription:
@@ -42,6 +42,6 @@ Subscription management (same as for the ISAs):
 * Create subscription in Toulouse lasting a day:
 `create_sub toulouse`
 * Submit subscription:
-`submit_sub sub_id`
+`submit_sub sub_id/sub_name`
 * Delete subscription:
-`delete_sub sub_id`
+`delete_sub sub_id/sub_name`

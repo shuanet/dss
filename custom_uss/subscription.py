@@ -11,6 +11,7 @@ class Subscription():
 		self.geometry = _geometry
 		self.time_start = _time_start
 		self.time_end = _time_end
+		self.submitted = False
 
 
 	def __str__(self):

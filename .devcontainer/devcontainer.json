@@ -1,5 +1,13 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+<<<<<<< HEAD
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.217.4/containers/python-3
+=======
+<<<<<<< HEAD
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.224.2/containers/python-3
+=======
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.217.4/containers/python-3
+>>>>>>> 8892bb5fa549b9a0c3066db103fe4929c785b060
+>>>>>>> origin
 {
 	"name": "Python 3",
 	"build": {

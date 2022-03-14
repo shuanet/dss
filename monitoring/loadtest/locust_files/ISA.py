@@ -1,22 +1,28 @@
 #!env/bin/python3
 
-import client
 import datetime
 import random
 import threading
 import time
 import typing
 import uuid
+import client
+from locust import task, between
 from monitoring.monitorlib import rid
 from monitoring.prober.rid import common
-from locust import task, between
 
 class ISA(client.USS):
+    """
+    Class ISA definition.
+    """
     wait_time = between(0.01, 1)
     lock = threading.Lock()
 
     @task(10)
     def create_isa(self):
+        """
+        Create an ISA. Timestamps, ID, vertices, altitude range. Put it in isa_dict.
+        """
         time_start = datetime.datetime.utcnow()
         time_end = time_start + datetime.timedelta(minutes=60)
         isa_uuid = str(uuid.uuid4())
@@ -43,6 +49,9 @@ class ISA(client.USS):
 
     @task(5)
     def update_isa(self):
+        """
+        Update ISA with ID and Version.
+        """
         target_isa, target_version = self.checkout_isa()
         if not target_isa:
             print("Nothing to pick from isa_dict for UPDATE")
@@ -72,6 +81,9 @@ class ISA(client.USS):
 
     @task(100)
     def get_isa(self):
+        """
+        Get ISA info from isa_dict.
+        """
         target_isa = random.choice(list(self.isa_dict.keys())) if self.isa_dict else None
         if not target_isa:
             print("Nothing to pick from isa_dict for GET")
@@ -80,6 +92,9 @@ class ISA(client.USS):
 
     @task(1)
     def delete_isa(self):
+        """
+        Delete an ISA with ID and Version.
+        """
         target_isa, target_version = self.checkout_isa()
         if not target_isa:
             print("Nothing to pick from isa_dict for DELETE")
@@ -89,6 +104,9 @@ class ISA(client.USS):
         )
 
     def checkout_isa(self):
+        """
+        Check an ISA with ID and Version.
+        """
         self.lock.acquire()
         target_isa = random.choice(list(self.isa_dict.keys())) if self.isa_dict else None
         target_version = self.isa_dict.pop(target_isa, None)
@@ -96,9 +114,10 @@ class ISA(client.USS):
         return target_isa, target_version
 
     def on_start(self):
-        # insert atleast 1 ISA for update to not fail
+        """
+        insert atleast 1 ISA for update to not fail
+        """
         self.create_isa()
 
     def on_stop(self):
         self.isa_dict = {}
-

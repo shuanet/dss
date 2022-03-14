@@ -102,7 +102,9 @@ class USSP():
         else:
             print("Error in auth write process %s" % response.text)
 
-
+    """
+    ISA METHODS.
+    """
 
     def get_isa(self, _isa_id):
         """
@@ -258,7 +260,9 @@ class USSP():
             print("The ISA was not submitted to DSS, cant delete from DSS")
 
 
-
+    """
+    SUBSCRIPTION METHODS.
+    """
     def get_subscription(self, _sub_id):
         """
         Get a Sub by its ID.
@@ -416,3 +420,9 @@ class USSP():
             print(response.text)
         else:
             print("The subscription was not submitted to DSS, cant delete from DSS")
+
+    """
+    TELEMETRY METHODS.
+    """
+
+    def get_telemetry()

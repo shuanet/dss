@@ -9,6 +9,8 @@ import time
 from datetime import datetime, timedelta
 from isa import ISA
 from subscription import Subscription
+from uas import UAS
+from flight import Flight
 
 from flask import Flask
 import requests
@@ -437,7 +439,3 @@ class USSP():
         
         return response
     
-
-    
-    def get_telemetry(self, _flight_id):
-        

@@ -28,7 +28,7 @@ class USSP():
         self.write_headers = None
         self.isas = []
         self.subscriptions = []
-        self.uas = []
+        self.flights = []
         print("USSP %s created" % self.id)
 
         self.port = _port
@@ -443,3 +443,16 @@ class USSP():
         
         return response
     
+    def create_flight(self, _id, _uas_id, _time_start, _time_end, _dep_id, _arr_id, _ETD, _ETA, _waypoints, _diverts):
+        """
+        Create a flight for putting it in the DSS.
+        """
+        
+        flight_id = uuid.uuid1()
+        # attributes obtained from a get_Uplan() method
+
+        flight = Flight(flight_id, uas_id, _operator, _time_start, _time_end, dep_id, arr_id, ETD, ETA, waypoints, diverts)
+        self.flights.append(flight)
+
+        print("Flight created with id %s" % flight_id)
+        print(flight)

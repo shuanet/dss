@@ -3,7 +3,9 @@
 
 
 class Subscription():
-
+	"""
+	Defining a Subscription attributes to an ISA.
+	"""
 	def __init__(self, _name, _id, _geometry, _time_start, _time_end):
 
 		self.name = _name

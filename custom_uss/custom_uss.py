@@ -424,11 +424,15 @@ class USSP():
         else:
             print("The subscription was not submitted to DSS, cant delete from DSS")
 
+
     """
     FLIGHTS METHODS.
     """
 
     def get_flight(self, _flight_id):
+        """
+        Get a flight by its ID.
+        """
         url = "http://localhost:8082/v1/dss/flights/%s" % _flight_id
         response = requests.get(url, headers=self.read_headers)
 

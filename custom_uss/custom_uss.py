@@ -26,6 +26,7 @@ class USSP():
         self.write_headers = None
         self.isas = []
         self.subscriptions = []
+        self.uas = []
         print("USSP %s created" % self.id)
 
         self.port = _port
@@ -422,7 +423,21 @@ class USSP():
             print("The subscription was not submitted to DSS, cant delete from DSS")
 
     """
-    TELEMETRY METHODS.
+    FLIGHTS METHODS.
     """
 
-    def get_telemetry()
+    def get_flight(self, _flight_id):
+        url = "http://localhost:8082/v1/dss/flights/%s" % _flight_id
+        response = requests.get(url, headers=self.read_headers)
+
+        print(response.json)
+
+        print("USSP %s attempting to get flight %s" % (self.id, _flight_id))
+        print(response.text)
+        
+        return response
+    
+
+    
+    def get_telemetry(self, _flight_id):
+        

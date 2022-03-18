@@ -9,6 +9,8 @@ import time
 from datetime import datetime, timedelta
 from isa import ISA
 from subscription import Subscription
+from uas import UAS
+from flight import Flight
 
 from flask import Flask
 import requests
@@ -26,6 +28,7 @@ class USSP():
         self.write_headers = None
         self.isas = []
         self.subscriptions = []
+        self.flights = []
         print("USSP %s created" % self.id)
 
         self.port = _port
@@ -102,7 +105,9 @@ class USSP():
         else:
             print("Error in auth write process %s" % response.text)
 
-
+    """
+    ISA METHODS.
+    """
 
     def get_isa(self, _isa_id):
         """
@@ -258,7 +263,9 @@ class USSP():
             print("The ISA was not submitted to DSS, cant delete from DSS")
 
 
-
+    """
+    SUBSCRIPTION METHODS.
+    """
     def get_subscription(self, _sub_id):
         """
         Get a Sub by its ID.
@@ -416,3 +423,36 @@ class USSP():
             print(response.text)
         else:
             print("The subscription was not submitted to DSS, cant delete from DSS")
+
+
+    """
+    FLIGHTS METHODS.
+    """
+
+    def get_flight(self, _flight_id):
+        """
+        Get a flight by its ID.
+        """
+        url = "http://localhost:8082/v1/dss/flights/%s" % _flight_id
+        response = requests.get(url, headers=self.read_headers)
+
+        print(response.json)
+
+        print("USSP %s attempting to get flight %s" % (self.id, _flight_id))
+        print(response.text)
+        
+        return response
+    
+    def create_flight(self, _id, _uas_id, _time_start, _time_end, _dep_id, _arr_id, _ETD, _ETA, _waypoints, _diverts):
+        """
+        Create a flight for putting it in the DSS.
+        """
+        
+        flight_id = uuid.uuid1()
+        # attributes obtained from a get_Uplan() method
+
+        flight = Flight(flight_id, uas_id, _operator, _time_start, _time_end, dep_id, arr_id, ETD, ETA, waypoints, diverts)
+        self.flights.append(flight)
+
+        print("Flight created with id %s" % flight_id)
+        print(flight)

@@ -64,6 +64,10 @@ def main():
                     ussp.create_isa_test()
                 else:
                     ussp.create_isa(cmd_args[1], cmd_args[2], cmd_args[3], cmd_args[4])
+            # Test geo from file
+            if cmd_args[0] == "create_isa_geofile":
+                ussp.create_isa_geofile(cmd_args[1], cmd_args[2], cmd_args[3], cmd_args[4])
+            
             elif cmd_args[0] == "submit_isa":
                 if is_uuid(cmd_args[1]):
                     ussp.submit_isa(_isa_id=cmd_args[1]) 

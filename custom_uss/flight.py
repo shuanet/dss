@@ -14,9 +14,10 @@ class Flight():
 		self.min_alt = min_alt
 		self.time_start = time_start
 		self.time_end = time_end
-		self.assigned_isa = None
+		self.assigned_isa_id = None
 		self.status = None
-
+		self.telemetry_started = False
+		self.last_telemetry_report_timestamp = None
 
 	def get_json(self):
 
@@ -29,7 +30,7 @@ class Flight():
 					"time_start": str(self.time_start),
 					"time_end": str(self.time_end),
 				},
-				"isa": str(self.assigned_isa),
+				"isa": str(self.assigned_isa_id),
 				"status": str(self.status),
 			})
 

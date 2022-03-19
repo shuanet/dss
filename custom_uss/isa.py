@@ -4,13 +4,14 @@
 
 class ISA():
 
-	def __init__(self, _name, _id, _geometry, _time_start, _time_end):
+	def __init__(self, _name, _id, _geometry, _time_start, _time_end, _owner):
 
 		self.name = _name
 		self.id = _id
 		self.geometry = _geometry
 		self.time_start = _time_start
 		self.time_end = _time_end
+		self.owner = _owner
 		self.submitted = False
 
 

@@ -5,7 +5,9 @@ import os
 import uuid
 import threading
 import time
+import logging
 
+<<<<<<< HEAD
 from datetime import datetime, timedelta
 from isa import ISA
 from subscription import Subscription
@@ -14,6 +16,19 @@ from flight import Flight
 
 from flask import Flask
 import requests
+=======
+from flask_socketio import SocketIO
+
+from datetime import datetime, timedelta
+from flask import Flask, request
+
+from isa import ISA
+from subscription import Subscription
+from flight import Flight
+
+
+class USSP():
+>>>>>>> 8390865225a9ee0052e5d946beb76e3b4c53f8dd
 
 
 class USSP():
@@ -34,16 +49,50 @@ class USSP():
         self.port = _port
         self.app = Flask(__name__)
 
-        @self.app.route("/%s" % self.id , methods=['GET'])
+        self.socketio = SocketIO(self.app)
+
+        # to disable logging information
+        log = logging.getLogger('werkzeug')
+        log.disabled = True
+
+        @self.socketio.on('TELEMETRY')
+        def handle_tele(tele):
+            print("telemetry received " + str(tele))
+
+        @self.app.route("/%s" % self.id , methods=["GET"])
         def home_page():
             return ("HOMEPAGE")
 
-        @self.app.route("/%s/flights" % self.id, methods=["GET"])
-        def get_all_flights():
-            return ("all flights")
+        @self.app.route("/%s/flights" % self.id, methods=["GET", "POST"])
+        def flights():
+            if request.method == 'POST':
+                #print(request.data)
+                # TODO : check flight creation request completion
+                # TODO : accept or refuse flight according to other flights 
+                flight = self.create_flight(request.data)
+                # one day automatically assign flight to ISA ? ## DO THIS WHEN START FLIGHT
+                self.assign_isa_to_flight(flight)
+                #isa_for_flight = input("Input ISA for flight %s : " % flight.id)
+                #self.assign_isa_to_flight(flight, isa_for_flight)
+                flight.status = "ACCEPTED"
+                return flight.get_json()
+            elif request.method == 'GET':
+                return ("all flights")
+
+        @self.app.route("/%s/flights/<string:flight_id>" % self.id, methods=['GET', 'POST'])
+        def flight_information(flight_id):
+            if request.method == "POST":
+                return("POST flight_information")
+            elif request.method == "GET":
+                return ("flight_information")
+
+        @self.app.route("/%s/flights/<string:flight_id>/start_flight", methods=['POST'])
+        def start_flight(flight_id):
+            ok, msg = self.start_flight(flight_id)
+            return(msg)
 
         @self.app.route("/%s/flights/<string:flight_id>/details" % self.id, methods=["GET"])
-        def get_flight_details(flight_id, methods=["GET"]):
+        def get_flight_details(flight_id):
             return ("flight details")
 
         def run_thread_server():    
@@ -79,6 +128,8 @@ class USSP():
         else:
             print("Error in auth read process %ss" % response.text)
 
+        return response.status_code
+
 
 
     def authentify_write(self):
@@ -103,7 +154,13 @@ class USSP():
             }
             print("USSP %s auth write with token %s" % (self.id, self.write_token))
         else:
+<<<<<<< HEAD
             print("Error in auth write process %s" % response.text)
+=======
+            print("Error in auth write process %" % response.text)
+
+        return response.status_code
+>>>>>>> 8390865225a9ee0052e5d946beb76e3b4c53f8dd
 
     """
     ISA METHODS.
@@ -130,7 +187,11 @@ class USSP():
         """
         new_isa_id = uuid.uuid1()
 
+<<<<<<< HEAD
         isa = ISA(new_isa_id, _geometry, _time_start, _time_end, self.port)
+=======
+        isa = ISA(new_isa_id, geometry, time_start, time_end, self.id)
+>>>>>>> 8390865225a9ee0052e5d946beb76e3b4c53f8dd
         self.isas.append(isa)
 
         print("ISA created with id %s" % new_isa_id)
@@ -171,7 +232,7 @@ class USSP():
                 "altitude_hi": 500
             }
 
-        isa = ISA(name, new_isa_id, geometry, time_start, time_end)
+        isa = ISA(name, new_isa_id, geometry, time_start, time_end, self.id)
 
         self.isas.append(isa)
 
@@ -425,6 +486,7 @@ class USSP():
             print("The subscription was not submitted to DSS, cant delete from DSS")
 
 
+<<<<<<< HEAD
     """
     FLIGHTS METHODS.
     """
@@ -456,3 +518,51 @@ class USSP():
 
         print("Flight created with id %s" % flight_id)
         print(flight)
+=======
+
+    def create_flight(self, _data):
+
+        #data = json.dumps(_data.decode('utf8').replace("'", '"'))
+        data = json.loads(_data.decode('utf8'))
+        print(data)
+
+        id = uuid.uuid1()
+        buffer = data["buffer"]
+        max_alt = data["max_alt"]
+        min_alt = data["min_alt"]
+        time_start = data["time_start"]
+        time_end = ["time_end"]
+
+        flight = Flight(id, buffer, max_alt, min_alt, time_start, time_end)
+
+        self.flights.append(flight)
+
+        return flight
+
+
+
+    def assign_isa_to_flight(self, flight):
+
+        # here we just check if toulouse ISA exists for the flight 
+        # we consider that in our scenario all flights will take place in toulouse
+        # and assign it to the flight 
+
+        # TODO later : make something that really does the job
+
+        for isa in self.isas:
+            if isa.name == "toulouse":
+                flight.assigned_isa_id = ias.id
+
+
+
+    def start_flight(self, flight_id):
+
+        for flight in self.flight:
+            if flight.id == flight_id:
+                # ASSIGN ISA AND CONFIRM FLIGHT START
+                self.assign_isa_to_flight(flight)
+                flight.status = "STARTED"
+                return True, flight.get_json()
+            else: 
+                return False, "FLIGHT NOT EXISTING, REQUEST DENIED"
+>>>>>>> 8390865225a9ee0052e5d946beb76e3b4c53f8dd

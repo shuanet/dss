@@ -26,7 +26,7 @@ You can open as many terminals as you want and create as many ussps as you want.
 ---
 Once you have your USSPs running, you can type the following commands to manage ISAs and subscriptions for each USSP.
 
-Isa management:
+ISA management:
 * You can create a custom ISA: 
 `create_isa name geometry time_start time_end` 
 * For testing purposes, you can create a predefined ISA, encompassing Toulouse and its surroundings, named TOULOUSE, starting now and lasting for a day: 

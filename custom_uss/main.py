@@ -5,9 +5,14 @@ from custom_uss import USSP
 #import requests
 
 """
+<<<<<<< HEAD
 Commands: 
 
 create_ussp id port
+=======
+commands:
+create_ussp id port 
+>>>>>>> 8390865225a9ee0052e5d946beb76e3b4c53f8dd
 
 get_isa isa_id
 create_isa toulouse
@@ -21,6 +26,7 @@ create_sub name geometry time_start time_end
 submit_sub sub_id/sub_name 
 delete_sub sub_id/sub_name
 
+assign_flight flight_id isa_id/isa_name
 """
 
 def is_uuid(uuid):

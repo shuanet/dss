@@ -18,9 +18,6 @@ from flight import Flight
 
 
 class USSP():
-
-
-class USSP():
     """
     USSP actions with API
     """

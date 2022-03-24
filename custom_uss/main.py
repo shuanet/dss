@@ -5,14 +5,8 @@ from custom_uss import USSP
 #import requests
 
 """
-<<<<<<< HEAD
-Commands: 
-
-create_ussp id port
-=======
 commands:
 create_ussp id port 
->>>>>>> 8390865225a9ee0052e5d946beb76e3b4c53f8dd
 
 get_isa isa_id
 create_isa toulouse

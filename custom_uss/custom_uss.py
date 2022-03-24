@@ -7,16 +7,6 @@ import threading
 import time
 import logging
 
-<<<<<<< HEAD
-from datetime import datetime, timedelta
-from isa import ISA
-from subscription import Subscription
-from uas import UAS
-from flight import Flight
-
-from flask import Flask
-import requests
-=======
 from flask_socketio import SocketIO
 
 from datetime import datetime, timedelta
@@ -28,7 +18,6 @@ from flight import Flight
 
 
 class USSP():
->>>>>>> 8390865225a9ee0052e5d946beb76e3b4c53f8dd
 
 
 class USSP():
@@ -154,13 +143,9 @@ class USSP():
             }
             print("USSP %s auth write with token %s" % (self.id, self.write_token))
         else:
-<<<<<<< HEAD
-            print("Error in auth write process %s" % response.text)
-=======
             print("Error in auth write process %" % response.text)
 
         return response.status_code
->>>>>>> 8390865225a9ee0052e5d946beb76e3b4c53f8dd
 
     """
     ISA METHODS.
@@ -187,11 +172,7 @@ class USSP():
         """
         new_isa_id = uuid.uuid1()
 
-<<<<<<< HEAD
-        isa = ISA(new_isa_id, _geometry, _time_start, _time_end, self.port)
-=======
         isa = ISA(new_isa_id, geometry, time_start, time_end, self.id)
->>>>>>> 8390865225a9ee0052e5d946beb76e3b4c53f8dd
         self.isas.append(isa)
 
         print("ISA created with id %s" % new_isa_id)
@@ -486,39 +467,6 @@ class USSP():
             print("The subscription was not submitted to DSS, cant delete from DSS")
 
 
-<<<<<<< HEAD
-    """
-    FLIGHTS METHODS.
-    """
-
-    def get_flight(self, _flight_id):
-        """
-        Get a flight by its ID.
-        """
-        url = "http://localhost:8082/v1/dss/flights/%s" % _flight_id
-        response = requests.get(url, headers=self.read_headers)
-
-        print(response.json)
-
-        print("USSP %s attempting to get flight %s" % (self.id, _flight_id))
-        print(response.text)
-        
-        return response
-    
-    def create_flight(self, _id, _uas_id, _time_start, _time_end, _dep_id, _arr_id, _ETD, _ETA, _waypoints, _diverts):
-        """
-        Create a flight for putting it in the DSS.
-        """
-        
-        flight_id = uuid.uuid1()
-        # attributes obtained from a get_Uplan() method
-
-        flight = Flight(flight_id, uas_id, _operator, _time_start, _time_end, dep_id, arr_id, ETD, ETA, waypoints, diverts)
-        self.flights.append(flight)
-
-        print("Flight created with id %s" % flight_id)
-        print(flight)
-=======
 
     def create_flight(self, _data):
 
@@ -565,4 +513,3 @@ class USSP():
                 return True, flight.get_json()
             else: 
                 return False, "FLIGHT NOT EXISTING, REQUEST DENIED"
->>>>>>> 8390865225a9ee0052e5d946beb76e3b4c53f8dd

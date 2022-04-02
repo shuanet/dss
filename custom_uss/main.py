@@ -97,6 +97,7 @@ def main():
 			for isa in ussp.isas:
 				ussp.delete_isa(_isa_id=isa.id)
 			# delete all subs created
+			print("Deleting subs before killing ussp")
 			for sub in ussp.subscriptions:
 				ussp.delete_subscription(_sub_id=sub.id)
 			print("Done")

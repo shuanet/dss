@@ -1,4 +1,4 @@
-i# CUSTOM USS
+# CUSTOM USS
 
 
 Before creating our USSPs, we need to have the DSS running:
@@ -53,7 +53,7 @@ Subscription management (same as for the ISAs):
 Run the simu.py file, it extracts the data from DepartureV{1,2,3}.csv generated from RandomDemand.xlsx
 It creates an instance of Aircraft class for each aircraft/flight in RandomDemand.
 
-To adjust the speed of the simulation, change the `TIMESTEP` parameter. A high value will make the simulation slower, and a low value will make it quicker (I suggest 0.001 if you want to run it in less than 5 min, 0.01 will take around 50 mins and 1 will take around 12 hours).
+To adjust the speed of the simulation, change the `TIMESTEP` parameter. A high value will make the simulation slower, and a low value will make it quicker (I suggest 0.001 if you want to run it in less than 5 min, 0.01 will take around 20 mins and 1 will take around 12 hours).
 
 What does an instance of Aircraft do?
 (NB, all variables in CAPSLOCK are parameters that you are free to modify at the beginning of the simu.py file)

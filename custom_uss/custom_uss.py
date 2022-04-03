@@ -6,6 +6,7 @@ import uuid
 import threading
 import time
 import logging
+import random
 
 from flask_socketio import SocketIO
 
@@ -15,6 +16,14 @@ from flask import Flask, request
 from isa import ISA
 from subscription import Subscription
 from flight import Flight
+
+
+## PARAMS ##
+# if True, the USSP will assign a random delay compared to the time start specified when creating the flight
+accept_flight_with_random_late_time = True 
+# hgihest and lowest value for the random delay (in seconds)
+random_delay_high = 10 * 60 
+random_delay_low = 0
 
 
 class USSP():
@@ -37,49 +46,126 @@ class USSP():
 
         self.socketio = SocketIO(self.app)
 
-        # to disable logging information
+        # to disable logging information 
+        # set log disabled to False for all logging information
         log = logging.getLogger('werkzeug')
         log.disabled = True
 
+        ## FOR PPRZ -- DONT TOUCH ##
         @self.socketio.on('TELEMETRY')
-        def handle_tele(tele):
-            print("telemetry received " + str(tele))
+        def handle_tele(_tele):
+            tele = json.loads(_tele)
+            flight_id = tele["id"]
+            try:
+                flight = next(flight for flight in self.flights if str(flight.id) == str(flight_id))
+            except StopIteration:
+                print("ERROR THAT SHOULDNT HAPPEN N° 5")
+                return
+            flight.last_telemetry_report = tele
+            if flight.telemetry_started:
+                pass
+            else:
+                print("TELEMETRY STARTED FOR FLIGHT ", flight_id)
+                flight.telemetry_started = True
+
 
         @self.app.route("/%s" % self.id , methods=["GET"])
         def home_page():
             return ("HOMEPAGE")
 
+
         @self.app.route("/%s/flights" % self.id, methods=["GET", "POST"])
         def flights():
+            ## FOR PPRZ -- DONT TOUCH ##
             if request.method == 'POST':
-                #print(request.data)
-                # TODO : check flight creation request completion
-                # TODO : accept or refuse flight according to other flights 
-                flight = self.create_flight(request.data)
-                # one day automatically assign flight to ISA ? ## DO THIS WHEN START FLIGHT
-                self.assign_isa_to_flight(flight)
-                #isa_for_flight = input("Input ISA for flight %s : " % flight.id)
-                #self.assign_isa_to_flight(flight, isa_for_flight)
-                flight.status = "ACCEPTED"
+                print("FLIGHT REQUEST")
+                data = json.loads(request.data.decode("utf-8"))
+                # run strategic deconfliction things for vertiports (and airspace ?)
+                # this will return a time allocated for take off
+                # until this works, we just send the requested take off time 
+                flight_id = uuid.uuid1()
+                if accept_flight_with_random_late_time:
+                    delay = random.randint(random_delay_low, random_delay_high)
+                    print("ACCEPTING FLIGHT %s WITH %s DELAY" % (flight_id, delay))
+                    start_time = data["start_time"] + delay
+                    end_time = data["end_time"] + delay
+                else:
+                    start_time = data["start_time"]
+                    end_time = data["end_time"]
+                # TODO 
+                # create flight in ussp database and make its information avalable to other ussps 
+                # /!\ requires to assign an ISA to the flight
+                # for now, we create a flight with just flight_id, start and end time
+                flight = Flight(flight_id, None, None, None, start_time, end_time)
+                flight.status = "CREATED"
+                self.flights.append(flight)
+                print(flight.get_json())
                 return flight.get_json()
+            ## END DONT TOUCH ##
+            ## GOOD TO KEEP TO CHECK TELEMETRY HOWEVER ##
             elif request.method == 'GET':
-                return ("all flights")
+                flight_info = []
+                for flight in self.flights:
+                    flight_info.append(flight.get_json())
+                return(str(flight_info))
+                
+
 
         @self.app.route("/%s/flights/<string:flight_id>" % self.id, methods=['GET', 'POST'])
         def flight_information(flight_id):
             if request.method == "POST":
                 return("POST flight_information")
+            ## GOOD TO KEEP TO CHECK TELEMETRY HOWEVER ##
             elif request.method == "GET":
-                return ("flight_information")
+                try:
+                    flight = next(flight for flight in self.flights if str(flight.id) == str(flight_id))
+                    return str(flight.get_json())
+                except StopIteration:
+                    return ("FLIGHT DOESNT EXIST")
 
-        @self.app.route("/%s/flights/<string:flight_id>/start_flight", methods=['POST'])
+
+        ## FOR PPRZ -- DONT TOUCH ##
+        @self.app.route("/%s/flights/<string:flight_id>/start_flight" % self.id, methods=['GET', 'POST'])
         def start_flight(flight_id):
-            ok, msg = self.start_flight(flight_id)
-            return(msg)
+            # check if flight has been created 
+            # and if time to start is close to current time (complicated?, not for now)
+            # send flight confirmation message and endpoint to provide telemetry
+            try:
+                flight = next(flight for flight in self.flights if str(flight.id) == flight_id)
+            except StopIteration:
+                print("ERROR THAT SHOULDNT HAPPEN N° 3")
+                return 'flight id not found in database', 400
+            flight.status = "STARTED"
+            print("STARTING FLIGHT %s" % flight.get_json())
+            response = json.dumps({
+                "flight_id": flight_id,
+                "flight_status": flight.status,
+                "telemetry_endpoint": "http://localhost:%s" % self.port
+                })
+            return response
+        ## END DONT TOUCH ##
+
+        ## FOR PPRZ -- DONT TOUCH ##
+        @self.app.route("/%s/flights/<string:flight_id>/end_flight" % self.id, methods=['GET', 'POST'])
+        def end_flight(flight_id):
+            try:
+                flight = next(flight for flight in self.flights if str(flight.id) == flight_id)
+            except StopIteration:
+                print("ERROR THAT SHOULDNT HAPPEN N° 7")
+                return 'flight id not found in database', 400
+            print ("FLIGHT %s ENDED" % flight_id)
+            flight.status = "ENDED"
+            response = json.dumps({
+                "flight_id": flight_id,
+                "flight_status": flight.status
+                })
+            return response
 
         @self.app.route("/%s/flights/<string:flight_id>/details" % self.id, methods=["GET"])
         def get_flight_details(flight_id):
             return ("flight details")
+        ## END DONT TOUCH ##
+
 
         def run_thread_server():    
             self.app.run('localhost', _port)

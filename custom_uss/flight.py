@@ -37,8 +37,5 @@ class Flight():
 			})
 
 		return flight_json
-<<<<<<< HEAD
-=======
 
 
->>>>>>> origin/custom_uss

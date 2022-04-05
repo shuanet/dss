@@ -255,7 +255,7 @@ class USSP():
         """
         new_isa_id = uuid.uuid1()
 
-        isa = ISA(new_isa_id, geometry, time_start, time_end, self.id)
+        isa = ISA(new_isa_id, _geometry, _time_start, _time_end, self.id)
         self.isas.append(isa)
 
         print("ISA created with id %s" % new_isa_id)
@@ -582,7 +582,7 @@ class USSP():
 
         for isa in self.isas:
             if isa.name == "toulouse":
-                flight.assigned_isa_id = ias.id
+                flight.assigned_isa_id = isa.id
 
 
 

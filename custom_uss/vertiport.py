@@ -6,42 +6,51 @@ import datetime
 # only single vertiport
 
 # PARAMETERS
-# static_info = [name, lat, lon, type, t_start, t_end]
-# slots_schedule = [[t_start, t_end, available, flight_# id, type], [t_start, t_end, ...]]
+# pàrking_stands = [type, available, flight_id, charging_progress]
+# slots_schedule = [t_start, t_end, available, flight_id, type]
 
 
 class Vertiport():
 
-	def __init__(self, _id, _static_info, _FATO_status, _parking_stands, _ground_handling, _evtol_elp, _slot_schedule):
+	def __init__(self, _id, _name, _type, _lat, _lon, _altitude, _time_start, _time_end, _FATO_status, _parking_stands, _ground_handling, _evtol_elp, _slot_schedule):
 		self.id = _id
-		self.static_info = _static_info				#json
+		self.name = _name
+		self.type = _type
+		self.lat = _lat
+		self.lon = _lon
+		self.altitude = _altitude
+		self.time_start = _time_start
+		self.time_end = _time_end
 		self.FATO_status = _FATO_status
-		self.parking_stands = _parking_stands
+		self.parking_stands = _parking_stands		#json
 		self.ground_handling = _ground_handling
 		self.evtol_elp = _evtol_elp
 		self.slot_schedule = _slot_schedule			#json
 
 
-	def get_static_info_json(self):
+	def get_parking_stands_json(self):
 		
-		static_info_json = json.dumps({
-			"id": str(self.id),
-			"name": str(self.static_info[0]),
-			"location": {
-				"lat": self.static_info[1],
-				"lon": self.static_info[2]
-			},
-			"type": str(self.static_info[3]),
-			"time_start": datetime(self.static_info[4]),
-			"time_end": datetime(self.static_info[5])
+		parking_json = json.dumps({
+			"parking_id":{
+				"type": datetime(self.parking_stands[0]),
+				"available": self.parking_stands[1],
+				"flight_id": str(self.parking_stands[2]),
+				"charging_progress": self.parking_stands[3]
+			}
 		})
 
-		return static_info_json
+		return parking_json
 
 	def get_slots_json(self):
 		
 		slots_json = json.dumps({
-			
+			"slot_id":{
+				"time_start": datetime(self.slot_schedule[0]),
+				"time_end": datetime(self.slots_json[1]),
+				"available": self.slot_schedule[2],
+				"flight_id": str(self.slot_schedule[3]),
+				"type": str(self.slot_schedule[4])
+			}
 		})
 
 		return slots_json

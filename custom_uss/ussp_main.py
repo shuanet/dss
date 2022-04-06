@@ -24,36 +24,36 @@ assign_flight flight_id isa_id/isa_name
 """
 
 def is_uuid(uuid):
-    """
-    UUID encription.
-    """
-    match = re.match('[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}', uuid)
-    if match is None:
-        return False
-    else:
-        return True
+	"""
+	UUID encription.
+	"""
+	match = re.match('[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}', uuid)
+	if match is None:
+		return False
+	else:
+		return True
 
 
 
 
 def main():
-    """
-    Main program.
-    """
-    loop_ussp_init = True
-    while loop_ussp_init:
-        cmd_create_ussp = input()
-        cmd_create_ussp_args = re.split(r'\s', cmd_create_ussp)
-        if cmd_create_ussp_args[0] == "create_ussp" \
-        and isinstance(cmd_create_ussp_args[1], str) \
-        and int(cmd_create_ussp_args[2]) < 9999 \
-        and int(cmd_create_ussp_args[2]) >= 1000:
-            ussp = USSP(cmd_create_ussp_args[1], cmd_create_ussp_args[2])
-            ussp.authentify_read()
-            ussp.authentify_write()
-            loop_ussp_init = False
-        else:
-            print('bad cmd, use create_ussp id port')
+	"""
+	Main program.
+	"""
+	loop_ussp_init = True
+	while loop_ussp_init:
+		cmd_create_ussp = input()
+		cmd_create_ussp_args = re.split(r'\s', cmd_create_ussp)
+		if cmd_create_ussp_args[0] == "create_ussp" \
+		and isinstance(cmd_create_ussp_args[1], str) \
+		and int(cmd_create_ussp_args[2]) < 9999 \
+		and int(cmd_create_ussp_args[2]) >= 1000:
+			ussp = USSP(cmd_create_ussp_args[1], cmd_create_ussp_args[2])
+			ussp.authentify_read()
+			ussp.authentify_write()
+			loop_ussp_init = False
+		else:
+			print('bad cmd, use create_ussp id port')
 
 	loop_ussp_init = True
 	while loop_ussp_init:
@@ -124,4 +124,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+	main()

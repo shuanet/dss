@@ -110,7 +110,6 @@ class USSP():
                 return(str(flight_info))
                 
 
-
         @self.app.route("/%s/flights/<string:flight_id>" % self.id, methods=['GET', 'POST'])
         def flight_information(flight_id):
             if request.method == "POST":
@@ -187,7 +186,7 @@ class USSP():
             ('issuer', 'dummy_oauth'),
         )
 
-        response = requests.get('http://localhost:8085/token', params=params)
+        response = request.get('http://localhost:8085/token', params=params)
         #print(response.json())
 
         if response.status_code == 200:
@@ -203,7 +202,6 @@ class USSP():
         return response.status_code
 
 
-
     def authentify_write(self):
         """
         Get the token for writing requests.
@@ -215,7 +213,7 @@ class USSP():
             ('issuer', 'dummy_oauth'),
         )
 
-        response = requests.get('http://localhost:8085/token', params=params)
+        response = request.get('http://localhost:8085/token', params=params)
         #print(response.json())
 
         if response.status_code == 200:
@@ -239,7 +237,7 @@ class USSP():
         Get ISA details by its ID.
         """
         url = "http://localhost:8082/v1/dss/identification_service_areas/%s" % _isa_id
-        response = requests.get(url, headers=self.read_headers)
+        response = request.get(url, headers=self.read_headers)
         print(response.json())
 
         print("USSP %s attempting to get ISA %s" % (self.id, _isa_id))
@@ -334,7 +332,7 @@ class USSP():
                 })
 
             print("USSP %s attempting to submit ISA %s" % (self.id, isa_id))
-            response = requests.request('PUT', "http://localhost:8082/v1/dss/identification_service_areas/%s" % isa_id, headers=self.write_headers, data=payload)
+            response = request.request('PUT', "http://localhost:8082/v1/dss/identification_service_areas/%s" % isa_id, headers=self.write_headers, data=payload)
             #print(response.json())
 
             if response.status_code == 200:
@@ -375,7 +373,7 @@ class USSP():
 
             url = "http://localhost:8082/v1/dss/identification_service_areas/%s/%s" % (isa_id, dss_isa_version)
 
-            response = requests.delete(url, headers=self.write_headers)
+            response = request.delete(url, headers=self.write_headers)
             #print(response.json())
 
             if response.status_code == 200:
@@ -397,7 +395,7 @@ class USSP():
         """
         print("sub_id : ", _sub_id)
         url = "http://localhost:8082/v1/dss/subscriptions/%s" % _sub_id
-        response = requests.get(url, headers=self.read_headers)
+        response = request.get(url, headers=self.read_headers)
         print(response.json())
 
         print("USSP %s attempting to get subscription %s" % (self.id, _sub_id))
@@ -496,7 +494,7 @@ class USSP():
                 })
 
             print("USSP %s attempting to subscribe with sub_id %s" % (self.id, sub_id))
-            response = requests.request('PUT', "http://localhost:8082/v1/dss/subscriptions/%s" % sub_id, headers=self.read_headers, data=payload)
+            response = request.request('PUT', "http://localhost:8082/v1/dss/subscriptions/%s" % sub_id, headers=self.read_headers, data=payload)
             #print(response.json())
 
             if response.status_code == 200:
@@ -537,7 +535,7 @@ class USSP():
 
             url = "http://localhost:8082/v1/dss/subscriptions/%s/%s" % (sub_id, dss_sub_version)
 
-            response = requests.delete(url, headers=self.read_headers)
+            response = request.delete(url, headers=self.read_headers)
             #print(response.json())
 
             if response.status_code == 200:

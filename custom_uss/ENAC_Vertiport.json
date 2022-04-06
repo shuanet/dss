@@ -1,0 +1,56 @@
+{
+    "id": null,
+    "name": "ENAC",
+    "type": "ground-based",
+    "latitude": 43.562758,
+    "longitude":  1.481576,
+    "altitude": 147,
+    "time_start": null,
+    "time_end": null,
+    "FATO_status": "free",
+    "parking_stands":[{
+        "e1":{
+            "type": "medium",
+            "available": true,
+            "flight_id": null,
+            "charging_status": null
+        },
+        "e2":{
+            "type": "medium",
+            "available": true,
+            "flight_id": null,
+            "charging_status": null
+        },
+        "e3":{
+            "type": "large",
+            "available": true,
+            "flight_id": null,
+            "charging_status": null
+        }
+    }],
+    "ground_handling_status": "free",
+    "evtol_elp": [],
+    "slot_schedule":[{
+        "s1":{
+            "time_start": null,
+            "time_end": null,
+            "available": true,
+            "flight_id": null,
+            "type": null
+        },
+        "s2":{
+            "time_start": null,
+            "time_end": null,
+            "available": true,
+            "flight_id": null,
+            "type": null
+        },
+        "s3":{
+            "time_start": null,
+            "time_end": null,
+            "available": true,
+            "flight_id": null,
+            "type": null
+        }
+    }]
+}

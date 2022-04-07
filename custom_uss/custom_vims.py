@@ -92,7 +92,12 @@ class VIMS():
     
     # def check_permission(self)
 
-    # on ussp
+    # def update_vertiport
+
+    # def subscribe_vertiport
+
+    # def unsubscribe_vertiport
+
     def get_vertiport(self, _vertiport_id):
         """
         Get Vertiport details by its ID.

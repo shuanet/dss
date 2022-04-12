@@ -88,30 +88,11 @@ class VIMS():
 	"""
 	VERTIPORT METHODS.
 	"""
-	def create_vertiport_test_ENAC(self):
+	def create_vertiport_test(self, file_name):
 		"""
 		Create a predetermined Vertiport "ENAC" for testing.
 		"""
-		f = open("ENAC_Vertiport.json", "r")
-		data = json.load(f)
-		print(data)
-
-		_vertiport_id = uuid.uuid1()
-		_time_start = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-		_time_end = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-		vertiport = Vertiport(_vertiport_id, data[1], data[3], data[4], data[5], data[6], _time_start, _time_end, data[9], data[10], data[11], data[12], data[13])
-		self.vertiports.append(vertiport)
-
-		print("Vertiport created with id: %s" % _vertiport_id)
-		print(vertiport)
-
-
-	def create_vertiport_test_LFBO(self):
-		"""
-		Create a predetermined Vertiport "LFBO" for testing.
-		"""
-		f = open("LFBO_Vertiport.json", "r")
+		f = open(file_name, "r")
 		data = json.load(f)
 		print(data)
 

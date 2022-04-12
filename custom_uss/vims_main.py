@@ -50,6 +50,9 @@ def main():
 			cmd_args = re.split(r'\s', cmd)
 			if cmd_args[0] == "get_vertiport":
 				vims.get_vertiport(cmd_args[1])
+			elif cmd_args[0] == "create_vertiport":
+				vims.create_vertiport_test("ENAC_Vertiport.json")
+				vims.create_vertiport_test("LFBO_Vertiport.json")
 		
 		except KeyboardInterrupt:
 			# delete all ISAs created 

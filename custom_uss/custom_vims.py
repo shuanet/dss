@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from flask import Flask, request
 
 from vertiport import Vertiport
+# from custom_uss.custom_uss import USSP
 
 
 class VIMS():
@@ -21,6 +22,7 @@ class VIMS():
 		self.read_headers = None
 		self.write_headers = None
 		self.vertiports = []
+		self.flight_sequence = []
 		print("VIMS %s created" % self.id)
 
 		self.port = _port
@@ -90,7 +92,7 @@ class VIMS():
 	"""
 	def create_vertiport_test(self, file_name):
 		"""
-		Create a predetermined Vertiport "ENAC" for testing.
+		Create a predetermined Vertiport for testing.
 		"""
 		f = open(file_name, "r")
 		data = json.load(f)
@@ -126,9 +128,6 @@ class VIMS():
 	# def check_permission(self)
 
 
-	# def update_vertiport
-
-
 	# def subscribe_vertiport
 
 
@@ -147,3 +146,18 @@ class VIMS():
 		print(response.text)
 		
 		return response
+
+
+	# def update_vertiport_slots(self, _vertiport_id, flight_id)
+
+
+	# def check_slots_availability(self, _vertiport_id, _time)
+
+
+	# def activate_slot(self)
+
+
+	# def get_flight_ussp(self, flight_id)
+
+
+	# def compute_flight_sequence(self)	

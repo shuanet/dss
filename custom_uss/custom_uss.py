@@ -594,3 +594,10 @@ class USSP():
                 return True, flight.get_json()
             else: 
                 return False, "FLIGHT NOT EXISTING, REQUEST DENIED"
+
+
+    
+    # def update_flight_status(self, flight_id, status) waiting for clearance, active
+
+
+    # def check_flight_conformity(self, flight_id), check if its in the stated isas

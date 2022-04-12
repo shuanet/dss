@@ -38,8 +38,6 @@ def main():
 		and int(cmd_create_vims_args[2]) < 9999 \
 		and int(cmd_create_vims_args[2]) >= 1000:
 			vims = VIMS(cmd_create_vims_args[1], cmd_create_vims_args[2])
-			vims.authentify_read()
-			vims.authentify_write()
 			loop_vims_init = False
 		else:
 			print('bad cmd, use $ create_vims id port')

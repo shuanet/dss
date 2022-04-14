@@ -138,21 +138,41 @@ class VIMS():
 		"""
 		Get Vertiport details by its ID.
 		"""
-		url = "http://localhost:8082/v1/vertiports/%s" % _vertiport_id
-		response = request.get(url, headers=self.read_headers)
-		print(response.json())
+		try:
 
-		print("VIMS %s attempting to get Vertiport %s" % (self.id, _vertiport_id))
-		print(response.text)
-		
-		return response
+			url = "http://localhost:8082/v1/vertiports/%s" % _vertiport_id
+			response = request.get(url, headers=self.read_headers)
+			print(response.json())
+
+			print("VIMS %s attempting to get Vertiport %s" % (self.id, _vertiport_id))
+			print(response.text)
+			
+			return response
+		except:
+			print("No veretiport with id %s in this VIMS" % _vertiport_id)
 
 
 	# def update_vertiport_slots(self, _vertiport_id, flight_id)
 
 
-	# def check_slots_availability(self, _vertiport_id, _time)
+	def check_slots_availability(self, _vertiport_id, _time):
+		# search the vertiport
+		try:
+			_slots = self.get_vertiport(_vertiport_id).json()
+			
+		except:
+			print("Vertiport with id: " + str(_vertiport_id) + " does not exist in VIMS: " + str(self.id))
 
+		# check the slots availability
+		try:
+			for  i in range(len(_slots)):
+				if (_slots[i].time_start <= _time) and (_time <= _slots[i].time_end) and (_slots[i].available == True):
+					print("Available slot: " + str(_slots[i]) + "from " + str(_slots[i].time_start) + "to " + str(_slots[i].time_end))
+
+		except:
+			print("Unavailable slot at " + _time)
+		
+	
 
 	# def activate_slot(self)
 

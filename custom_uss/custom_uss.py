@@ -5,13 +5,26 @@ import os
 import uuid
 import threading
 import time
+import logging
+import random
+
+from flask_socketio import SocketIO
+
+from datetime import datetime, timedelta
+from flask import Flask, request
 
 from datetime import datetime, timedelta
 from isa import ISA
 from subscription import Subscription
+from flight import Flight
 
-from flask import Flask
-import requests
+
+## PARAMS ##
+# if True, the USSP will assign a random delay compared to the time start specified when creating the flight
+accept_flight_with_random_late_time = True 
+# hgihest and lowest value for the random delay (in seconds)
+random_delay_high = 10 * 60 
+random_delay_low = 0
 
 
 class USSP():
@@ -26,22 +39,134 @@ class USSP():
         self.write_headers = None
         self.isas = []
         self.subscriptions = []
+        self.flights = []
         print("USSP %s created" % self.id)
 
         self.port = _port
         self.app = Flask(__name__)
 
-        @self.app.route("/%s" % self.id , methods=['GET'])
+        self.socketio = SocketIO(self.app)
+
+        # to disable logging information 
+        # set log disabled to False for all logging information
+        log = logging.getLogger('werkzeug')
+        log.disabled = True
+
+        ## FOR PPRZ -- DONT TOUCH ##
+        @self.socketio.on('TELEMETRY')
+        def handle_tele(_tele):
+            tele = json.loads(_tele)
+            flight_id = tele["id"]
+            try:
+                flight = next(flight for flight in self.flights if str(flight.id) == str(flight_id))
+            except StopIteration:
+                print("ERROR THAT SHOULDNT HAPPEN N° 5")
+                return
+            flight.last_telemetry_report = tele
+            if flight.telemetry_started:
+                pass
+            else:
+                print("TELEMETRY STARTED FOR FLIGHT ", flight_id)
+                flight.telemetry_started = True
+
+
+        @self.app.route("/%s" % self.id , methods=["GET"])
         def home_page():
             return ("HOMEPAGE")
 
-        @self.app.route("/%s/flights" % self.id, methods=["GET"])
-        def get_all_flights():
-            return ("all flights")
+
+        @self.app.route("/%s/flights" % self.id, methods=["GET", "POST"])
+        def flights():
+            ## FOR PPRZ -- DONT TOUCH ##
+            if request.method == 'POST':
+                print("FLIGHT REQUEST")
+                data = json.loads(request.data.decode("utf-8"))
+                # run strategic deconfliction things for vertiports (and airspace ?)
+                # this will return a time allocated for take off
+                # until this works, we just send the requested take off time 
+                flight_id = uuid.uuid1()
+                if accept_flight_with_random_late_time:
+                    delay = random.randint(random_delay_low, random_delay_high)
+                    print("ACCEPTING FLIGHT %s WITH %s DELAY" % (flight_id, delay))
+                    start_time = data["start_time"] + delay
+                    end_time = data["end_time"] + delay
+                else:
+                    start_time = data["start_time"]
+                    end_time = data["end_time"]
+                # TODO 
+                # create flight in ussp database and make its information avalable to other ussps 
+                # /!\ requires to assign an ISA to the flight
+                # for now, we create a flight with just flight_id, start and end time
+                flight = Flight(flight_id, None, None, None, start_time, end_time)
+                flight.status = "CREATED"
+                self.flights.append(flight)
+                print(flight.get_json())
+                return flight.get_json()
+            ## END DONT TOUCH ##
+            ## GOOD TO KEEP TO CHECK TELEMETRY HOWEVER ##
+            elif request.method == 'GET':
+                flight_info = []
+                for flight in self.flights:
+                    flight_info.append(flight.get_json())
+                return(str(flight_info))
+                
+
+
+        @self.app.route("/%s/flights/<string:flight_id>" % self.id, methods=['GET', 'POST'])
+        def flight_information(flight_id):
+            if request.method == "POST":
+                return("POST flight_information")
+            ## GOOD TO KEEP TO CHECK TELEMETRY HOWEVER ##
+            elif request.method == "GET":
+                try:
+                    flight = next(flight for flight in self.flights if str(flight.id) == str(flight_id))
+                    return str(flight.get_json())
+                except StopIteration:
+                    return ("FLIGHT DOESNT EXIST")
+
+
+        ## FOR PPRZ -- DONT TOUCH ##
+        @self.app.route("/%s/flights/<string:flight_id>/start_flight" % self.id, methods=['GET', 'POST'])
+        def start_flight(flight_id):
+            # check if flight has been created 
+            # and if time to start is close to current time (complicated?, not for now)
+            # send flight confirmation message and endpoint to provide telemetry
+            try:
+                flight = next(flight for flight in self.flights if str(flight.id) == flight_id)
+            except StopIteration:
+                print("ERROR THAT SHOULDNT HAPPEN N° 3")
+                return 'flight id not found in database', 400
+            flight.status = "STARTED"
+            print("STARTING FLIGHT %s" % flight.get_json())
+            response = json.dumps({
+                "flight_id": flight_id,
+                "flight_status": flight.status,
+                "telemetry_endpoint": "http://localhost:%s" % self.port
+                })
+            return response
+        ## END DONT TOUCH ##
+
+        ## FOR PPRZ -- DONT TOUCH ##
+        @self.app.route("/%s/flights/<string:flight_id>/end_flight" % self.id, methods=['GET', 'POST'])
+        def end_flight(flight_id):
+            try:
+                flight = next(flight for flight in self.flights if str(flight.id) == flight_id)
+            except StopIteration:
+                print("ERROR THAT SHOULDNT HAPPEN N° 7")
+                return 'flight id not found in database', 400
+            print ("FLIGHT %s ENDED" % flight_id)
+            flight.status = "ENDED"
+            response = json.dumps({
+                "flight_id": flight_id,
+                "flight_status": flight.status
+                })
+            return response
 
         @self.app.route("/%s/flights/<string:flight_id>/details" % self.id, methods=["GET"])
-        def get_flight_details(flight_id, methods=["GET"]):
+        def get_flight_details(flight_id):
             return ("flight details")
+        ## END DONT TOUCH ##
+
 
         def run_thread_server():    
             self.app.run('localhost', _port)
@@ -63,7 +188,7 @@ class USSP():
             ('issuer', 'dummy_oauth'),
         )
 
-        response = requests.get('http://localhost:8085/token', params=params)
+        response = request.get('http://localhost:8085/token', params=params)
         #print(response.json())
 
         if response.status_code == 200:
@@ -75,6 +200,8 @@ class USSP():
             print("USSP %s auth read with token %s" % (self.id, self.read_token))
         else:
             print("Error in auth read process %ss" % response.text)
+
+        return response.status_code
 
 
 
@@ -89,7 +216,7 @@ class USSP():
             ('issuer', 'dummy_oauth'),
         )
 
-        response = requests.get('http://localhost:8085/token', params=params)
+        response = request.get('http://localhost:8085/token', params=params)
         #print(response.json())
 
         if response.status_code == 200:
@@ -102,6 +229,7 @@ class USSP():
         else:
             print("Error in auth write process %s" % response.text)
 
+        return response.status_code
 
 
     def get_isa(self, _isa_id):
@@ -109,7 +237,7 @@ class USSP():
         Get ISA details by its ID.
         """
         url = "http://localhost:8082/v1/dss/identification_service_areas/%s" % _isa_id
-        response = requests.get(url, headers=self.read_headers)
+        response = request.get(url, headers=self.read_headers)
         print(response.json())
 
         print("USSP %s attempting to get ISA %s" % (self.id, _isa_id))
@@ -125,7 +253,7 @@ class USSP():
         """
         new_isa_id = uuid.uuid1()
 
-        isa = ISA(new_isa_id, _geometry, _time_start, _time_end, self.port)
+        isa = ISA(new_isa_id, _geometry, _time_start, _time_end)
         self.isas.append(isa)
 
         print("ISA created with id %s" % new_isa_id)
@@ -166,7 +294,7 @@ class USSP():
                 "altitude_hi": 500
             }
 
-        isa = ISA(name, new_isa_id, geometry, time_start, time_end)
+        isa = ISA(name, new_isa_id, geometry, time_start, time_end, self.id)
 
         self.isas.append(isa)
 
@@ -204,7 +332,7 @@ class USSP():
                 })
 
             print("USSP %s attempting to submit ISA %s" % (self.id, isa_id))
-            response = requests.request('PUT', "http://localhost:8082/v1/dss/identification_service_areas/%s" % isa_id, headers=self.write_headers, data=payload)
+            response = request.request('PUT', "http://localhost:8082/v1/dss/identification_service_areas/%s" % isa_id, headers=self.write_headers, data=payload)
             #print(response.json())
 
             if response.status_code == 200:
@@ -245,7 +373,7 @@ class USSP():
 
             url = "http://localhost:8082/v1/dss/identification_service_areas/%s/%s" % (isa_id, dss_isa_version)
 
-            response = requests.delete(url, headers=self.write_headers)
+            response = request.delete(url, headers=self.write_headers)
             #print(response.json())
 
             if response.status_code == 200:
@@ -265,7 +393,7 @@ class USSP():
         """
         print("sub_id : ", _sub_id)
         url = "http://localhost:8082/v1/dss/subscriptions/%s" % _sub_id
-        response = requests.get(url, headers=self.read_headers)
+        response = request.get(url, headers=self.read_headers)
         print(response.json())
 
         print("USSP %s attempting to get subscription %s" % (self.id, _sub_id))
@@ -364,7 +492,7 @@ class USSP():
                 })
 
             print("USSP %s attempting to subscribe with sub_id %s" % (self.id, sub_id))
-            response = requests.request('PUT', "http://localhost:8082/v1/dss/subscriptions/%s" % sub_id, headers=self.read_headers, data=payload)
+            response = request.request('PUT', "http://localhost:8082/v1/dss/subscriptions/%s" % sub_id, headers=self.read_headers, data=payload)
             #print(response.json())
 
             if response.status_code == 200:
@@ -405,7 +533,7 @@ class USSP():
 
             url = "http://localhost:8082/v1/dss/subscriptions/%s/%s" % (sub_id, dss_sub_version)
 
-            response = requests.delete(url, headers=self.read_headers)
+            response = request.delete(url, headers=self.read_headers)
             #print(response.json())
 
             if response.status_code == 200:
@@ -416,3 +544,51 @@ class USSP():
             print(response.text)
         else:
             print("The subscription was not submitted to DSS, cant delete from DSS")
+
+
+
+    def create_flight(self, _data):
+
+        #data = json.dumps(_data.decode('utf8').replace("'", '"'))
+        data = json.loads(_data.decode('utf8'))
+        print(data)
+
+        id = uuid.uuid1()
+        buffer = data["buffer"]
+        max_alt = data["max_alt"]
+        min_alt = data["min_alt"]
+        time_start = data["time_start"]
+        time_end = ["time_end"]
+
+        flight = Flight(id, buffer, max_alt, min_alt, time_start, time_end)
+
+        self.flights.append(flight)
+
+        return flight
+
+
+
+    def assign_isa_to_flight(self, flight):
+
+        # here we just check if toulouse ISA exists for the flight 
+        # we consider that in our scenario all flights will take place in toulouse
+        # and assign it to the flight 
+
+        # TODO later : make something that really does the job
+
+        for isa in self.isas:
+            if isa.name == "toulouse":
+                flight.assigned_isa_id = isa.id
+
+
+
+    def start_flight(self, flight_id):
+
+        for flight in self.flight:
+            if flight.id == flight_id:
+                # ASSIGN ISA AND CONFIRM FLIGHT START
+                self.assign_isa_to_flight(flight)
+                flight.status = "STARTED"
+                return True, flight.get_json()
+            else: 
+                return False, "FLIGHT NOT EXISTING, REQUEST DENIED"

@@ -1,0 +1,9 @@
+Flask==2.1.1
+flask_socketio==5.1.1
+gevent_socketio==0.3.6
+pyproj==3.3.0
+PySide6==6.2.4
+requests==2.27.1
+Shapely==1.8.1.post1
+simpy==4.0.1
+websockets==10.2

@@ -13,7 +13,6 @@ from flask_socketio import SocketIO
 from datetime import datetime, timedelta
 from flask import Flask, request
 
-from datetime import datetime, timedelta
 from isa import ISA
 from subscription import Subscription
 from flight import Flight
@@ -111,7 +110,6 @@ class USSP():
                 return(str(flight_info))
                 
 
-
         @self.app.route("/%s/flights/<string:flight_id>" % self.id, methods=['GET', 'POST'])
         def flight_information(flight_id):
             if request.method == "POST":
@@ -204,7 +202,6 @@ class USSP():
         return response.status_code
 
 
-
     def authentify_write(self):
         """
         Get the token for writing requests.
@@ -227,10 +224,13 @@ class USSP():
             }
             print("USSP %s auth write with token %s" % (self.id, self.write_token))
         else:
-            print("Error in auth write process %s" % response.text)
+            print("Error in auth write process %" % response.text)
 
         return response.status_code
 
+    """
+    ISA METHODS.
+    """
 
     def get_isa(self, _isa_id):
         """
@@ -386,7 +386,9 @@ class USSP():
             print("The ISA was not submitted to DSS, cant delete from DSS")
 
 
-
+    """
+    SUBSCRIPTION METHODS.
+    """
     def get_subscription(self, _sub_id):
         """
         Get a Sub by its ID.
@@ -592,3 +594,10 @@ class USSP():
                 return True, flight.get_json()
             else: 
                 return False, "FLIGHT NOT EXISTING, REQUEST DENIED"
+
+
+    
+    # def update_flight_status(self, flight_id, status) waiting for clearance, active
+
+
+    # def check_flight_conformity(self, flight_id), check if its in the stated isas
